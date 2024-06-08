@@ -7,7 +7,9 @@ import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
@@ -31,6 +33,7 @@ import java.util.ArrayList;
 public class bluetoothScan extends AppCompatActivity implements BluetoothService.DataReceivedListener {
     private static final int REQUEST_ENABLE_BT = 1;
     private static final int REQUEST_LOCATION_PERMISSION = 2;
+    private static final int REQUEST_BLUETOOTH_PERMISSIONS = 3;
 
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothService bluetoothService;
@@ -39,7 +42,7 @@ public class bluetoothScan extends AppCompatActivity implements BluetoothService
     private ArrayList<BluetoothDevice> deviceList = new ArrayList<>();
 
 
-    private TextView BluetoothAdress;
+    private TextView BluetoothAddress;
     public String theAddress;
 
 
@@ -66,9 +69,9 @@ public class bluetoothScan extends AppCompatActivity implements BluetoothService
         super.onCreate(savedInstanceState);
         setContentView(R.layout.bluetooth_scan_screen);
 
-        @SuppressLint({"MissingInflatedId", "LocalSuppress"}) Button scanButton = findViewById(R.id.scan_the_bluetooth);
+        Button scanButton = findViewById(R.id.scanButton);
         ListView deviceListView = findViewById(R.id.deviceListView);
-        BluetoothAdress = findViewById(R.id.selected_device_data);
+        BluetoothAddress = findViewById(R.id.selected_device_data);
 
         deviceListAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
         deviceListView.setAdapter(deviceListAdapter);
@@ -78,6 +81,7 @@ public class bluetoothScan extends AppCompatActivity implements BluetoothService
 
         if (bluetoothAdapter == null) {
             Toast.makeText(this, "gaada device", Toast.LENGTH_SHORT).show();
+            return;
 
             //return view;
         }
@@ -85,6 +89,7 @@ public class bluetoothScan extends AppCompatActivity implements BluetoothService
             Intent enableBluetoothPlease = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
             startActivityForResult(enableBluetoothPlease, REQUEST_ENABLE_BT);
         }
+
 
         scanButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -100,15 +105,42 @@ public class bluetoothScan extends AppCompatActivity implements BluetoothService
             }
         });
 
-    }
-    private void startScanning(){
+        requestPermissions();
 
-        getPackageManager();
-        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-        {
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(receiver, filter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        unregisterReceiver(receiver);
+    }
+
+//    private void startScanning(){
+//
+//        getPackageManager();
+//        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
+//        {
+//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION_PERMISSION);
+//        } else {
+//            bluetoothAdapter.startDiscovery();
+//        }
+//    }
+
+    private void startScanning() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION_PERMISSION);
         } else {
+            if (bluetoothAdapter.isDiscovering()) {
+                bluetoothAdapter.cancelDiscovery();
+            }
             bluetoothAdapter.startDiscovery();
+            Toast.makeText(this, "Scanning for devices...", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -118,6 +150,8 @@ public class bluetoothScan extends AppCompatActivity implements BluetoothService
         if (requestCode == REQUEST_LOCATION_PERMISSION){
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
                 startScanning();
+            } else {
+                Toast.makeText(this, "Location permission is required for Bluetooth scanning", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -125,16 +159,44 @@ public class bluetoothScan extends AppCompatActivity implements BluetoothService
         if (bluetoothService != null) {
             bluetoothService.close();
         }
-        theAddress ="";
-        //bluetoothService = new BluetoothService(device.getAddress(), this);
-        theAddress = String.valueOf(new BluetoothService(device.getAddress(), this));
-        BluetoothAdress.setText(theAddress);
+//        theAddress ="";
+//        //bluetoothService = new BluetoothService(device.getAddress(), this);
+//        theAddress = String.valueOf(new BluetoothService(device.getAddress(), this));
+//        BluetoothAdress.setText(theAddress);
+        theAddress = device.getAddress();
+        bluetoothService = new BluetoothService(theAddress, this);
+        BluetoothAddress.setText(theAddress);
 
 
+    }
+    private void sendAddressToFragment(String address) {
+        Bundle bundle = new Bundle();
+        bundle.putString("BLUETOOTH_ADDRESS", address);
+
+//        YourFragment fragment = new YourFragment();
+//        fragment.setArguments(bundle);
+//
+//        getSupportFragmentManager().beginTransaction()
+//                .replace(R.id.fragment_container, fragment)
+//                .addToBackStack(null)
+//                .commit();
     }
 
     @Override
     public void onDataReceived(String data) {
 
+    }
+
+    private void requestPermissions() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.BLUETOOTH_SCAN,
+                    Manifest.permission.BLUETOOTH_CONNECT
+            }, REQUEST_BLUETOOTH_PERMISSIONS);
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.ACCESS_FINE_LOCATION
+            }, REQUEST_LOCATION_PERMISSION);
+        }
     }
 }

@@ -19,7 +19,8 @@
         <ListView
             android:id="@+id/deviceListView"
             android:layout_width="match_parent"
-            android:layout_height="425dp" />
+            android:layout_height="480dp"
+            />
         <TextView
             android:paddingTop="20dp"
             android:id="@+id/selected_device_data"
