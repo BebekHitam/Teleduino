@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Teleduino</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="bluetooth">Bluetooth Communication</string>
+    <string name="wifi">Wifi Communication</string>
+    <string name="bluetooth_device_address">Device Address</string>
+</resources>
