@@ -14,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.radar.bluetoothScan;
 import com.example.telemetri.BluetoothService;
@@ -43,6 +44,7 @@ public class bluetoothCommunications extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         addressBluetooth = view.findViewById(R.id.for_address);
+        addressBluetooth.setHint(DEVICE_ADDRESS);
         dataIn = view.findViewById(R.id.datanya);
 
         //Disini tolong lakukan scan
@@ -57,19 +59,23 @@ public class bluetoothCommunications extends Fragment {
         });
         //taruh disini DEVICE_ADDRESSNYA, setelah scan untuk mengubah value "0:0"
 
-        DEVICE_ADDRESS = String.valueOf(addressBluetooth.getText()); // ini tunggu set on click dulu
+
         oke = view.findViewById(R.id.to_launch);
-        oke.setEnabled(false);
-        if (DEVICE_ADDRESS.length()  > 4) {
-            oke.setEnabled(true);
-        }
+
 
         oke.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                int addressCheck = DEVICE_ADDRESS.length();
+                if (addressCheck >= 4){
+                    DEVICE_ADDRESS = String.valueOf(addressBluetooth.getText()); // ini tunggu set on click dulu
+                    bluetoothService = new BluetoothService(DEVICE_ADDRESS, this);
+                    runTheConnection();
+                } else {
+                    Toast.makeText(getContext(), "masukkan address yang benar", Toast.LENGTH_SHORT).show();
+                }
 
-                //bluetoothService = new BluetoothService(DEVICE_ADDRESS, this);
-                runTheConnection();
+
 
             }
         });
@@ -78,13 +84,13 @@ public class bluetoothCommunications extends Fragment {
         Thread readBluetoothData = new Thread(new Runnable() {
             @Override
             public void run() {
-                while (1==1){
-                    final String dataYangDiterima = bluetoothService.readData();
-                    if (dataYangDiterima != null){
+                while (true){
+                    final String receivedDataFromArduino = bluetoothService.readData();
+                    if (receivedDataFromArduino != null){
                         getActivity().runOnUiThread(new Runnable(){
                             @Override
                             public void run(){
-                                dataIn.setText(dataYangDiterima);
+                                dataIn.setText(receivedDataFromArduino);
                             }
                         });
                     }

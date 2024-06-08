@@ -164,7 +164,7 @@ public class bluetoothScan extends AppCompatActivity implements BluetoothService
 //        theAddress = String.valueOf(new BluetoothService(device.getAddress(), this));
 //        BluetoothAdress.setText(theAddress);
         theAddress = device.getAddress();
-        bluetoothService = new BluetoothService(theAddress, this);
+        //bluetoothService = new BluetoothService(theAddress, (View.OnClickListener) this);
         BluetoothAddress.setText(theAddress);
 
 

@@ -4,8 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
-
-import com.example.radar.bluetoothScan;
+import android.view.View;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,7 +24,7 @@ public class BluetoothService {
         void onDataReceived(String data);
     }
 
-    public BluetoothService(String deviceAddress, bluetoothScan bluetoothScan){
+    public BluetoothService(String deviceAddress, View.OnClickListener bluetoothScan){
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(deviceAddress);
         //dataReceivedListener = listener;
