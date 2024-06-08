@@ -68,7 +68,7 @@ public class bluetoothCommunications extends Fragment {
             @Override
             public void onClick(View v) {
 
-                bluetoothService = new BluetoothService(DEVICE_ADDRESS, this);
+                //bluetoothService = new BluetoothService(DEVICE_ADDRESS, this);
                 runTheConnection();
 
             }

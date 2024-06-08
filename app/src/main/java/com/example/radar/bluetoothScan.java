@@ -16,14 +16,12 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.fragment.app.FragmentTransaction;
 
 import com.example.teleduino.R;
 import com.example.telemetri.BluetoothService;
@@ -41,7 +39,7 @@ public class bluetoothScan extends AppCompatActivity implements BluetoothService
     private ArrayList<BluetoothDevice> deviceList = new ArrayList<>();
 
 
-    private TextView textView;
+    private TextView BluetoothAdress;
     public String theAddress;
 
 
@@ -70,12 +68,13 @@ public class bluetoothScan extends AppCompatActivity implements BluetoothService
 
         @SuppressLint({"MissingInflatedId", "LocalSuppress"}) Button scanButton = findViewById(R.id.scan_the_bluetooth);
         ListView deviceListView = findViewById(R.id.deviceListView);
-        textView = findViewById(R.id.selected_device_data);
+        BluetoothAdress = findViewById(R.id.selected_device_data);
 
         deviceListAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
         deviceListView.setAdapter(deviceListAdapter);
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
 
         if (bluetoothAdapter == null) {
             Toast.makeText(this, "gaada device", Toast.LENGTH_SHORT).show();
@@ -129,8 +128,8 @@ public class bluetoothScan extends AppCompatActivity implements BluetoothService
         theAddress ="";
         //bluetoothService = new BluetoothService(device.getAddress(), this);
         theAddress = String.valueOf(new BluetoothService(device.getAddress(), this));
-        Bundle bundle = new Bundle();
-        bundle.putString();
+        BluetoothAdress.setText(theAddress);
+
 
     }
 
