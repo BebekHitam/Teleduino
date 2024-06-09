@@ -7,12 +7,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,16 +23,22 @@ import com.example.bridge.ArduinoAdapterBluetooth;
 import com.example.radar.bluetoothScan;
 import com.example.telemetri.BluetoothService;
 
+import java.util.List;
+
 
 public class bluetoothCommunications extends Fragment {
     private Toolbar toolbar;
     private static final String TAG = "frame bluetooth";
     private static String DEVICE_ADDRESS = "0:0";
 
-    private TextView dataIn;
+
     private EditText addressBluetooth;
     private BluetoothService bluetoothService;
     private Button oke, scanNearbyDevice;
+    private ArduinoAdapterBluetooth arduinoAdapter;
+    private List<String> dataIn;
+    private RecyclerView recyclerView;
+
 
 
     @Override
@@ -48,6 +56,8 @@ public class bluetoothCommunications extends Fragment {
         addressBluetooth = view.findViewById(R.id.for_address);
         addressBluetooth.setHint(DEVICE_ADDRESS);
         dataIn = view.findViewById(R.id.datanya);
+        arduinoAdapter = new ArduinoAdapterBluetooth(dataIn);
+        recyclerView.setAdapter(arduinoAdapter);
 
         //Disini tolong lakukan scan
         scanNearbyDevice = view.findViewById(R.id.scan_the_bluetooth);
@@ -92,7 +102,8 @@ public class bluetoothCommunications extends Fragment {
                         getActivity().runOnUiThread(new Runnable(){
                             @Override
                             public void run(){
-                                dataIn.setText(receivedDataFromArduino);
+                                arduinoAdapter.addData(receivedDataFromArduino);
+
                             }
                         });
                     }
@@ -102,34 +113,34 @@ public class bluetoothCommunications extends Fragment {
         readBluetoothData.start();
     }
 
-    public void rinTheConnectionTwo(){
-        Thread readBluetoothin = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    final String receivedDataFromArduinoTwo = bluetoothService.readData();
-                    if (receivedDataFromArduinoTwo != null) {
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                //perse dulu datanya
-                                String[] streamInputData = receivedDataFromArduinoTwo.split(",");
-                                double rawSensorValue = Double.parseDouble(streamInputData[0]);
-
-                                //initiate Sensor data object
-                                SensorValue sensorValue = new SensorValue(String.valueOf(rawSensorValue));
-
-                                //update adapter list
-                                ArduinoAdapterBluetooth.updateStreamData(sensorValue);
-
-
-                            }
-                        });
-                    }
-                }
-            }
-        })
-    }
+//    public void rinTheConnectionTwo(){
+//        Thread readBluetoothin = new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                while (true) {
+//                    final String receivedDataFromArduinoTwo = bluetoothService.readData();
+//                    if (receivedDataFromArduinoTwo != null) {
+//                        getActivity().runOnUiThread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                //perse dulu datanya
+//                                String[] streamInputData = receivedDataFromArduinoTwo.split(",");
+//                                double rawSensorValue = Double.parseDouble(streamInputData[0]);
+//
+//                                //initiate Sensor data object
+//                                SensorValue sensorValue = new SensorValue(String.valueOf(rawSensorValue));
+//
+//                                //update adapter list
+//                                ArduinoAdapterBluetooth.updateStreamData(sensorValue);
+//
+//
+//                            }
+//                        });
+//                    }
+//                }
+//            }
+//        });
+//    }
 
 
     @Override
