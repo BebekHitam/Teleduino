@@ -16,6 +16,8 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.BluetoothDataIn.SensorValue;
+import com.example.bridge.ArduinoAdapterBluetooth;
 import com.example.radar.bluetoothScan;
 import com.example.telemetri.BluetoothService;
 
@@ -98,7 +100,35 @@ public class bluetoothCommunications extends Fragment {
             }
         });
         readBluetoothData.start();
+    }
 
+    public void rinTheConnectionTwo(){
+        Thread readBluetoothin = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (true) {
+                    final String receivedDataFromArduinoTwo = bluetoothService.readData();
+                    if (receivedDataFromArduinoTwo != null) {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                //perse dulu datanya
+                                String[] streamInputData = receivedDataFromArduinoTwo.split(",");
+                                double rawSensorValue = Double.parseDouble(streamInputData[0]);
+
+                                //initiate Sensor data object
+                                SensorValue sensorValue = new SensorValue(String.valueOf(rawSensorValue));
+
+                                //update adapter list
+                                ArduinoAdapterBluetooth.updateStreamData(sensorValue);
+
+
+                            }
+                        });
+                    }
+                }
+            }
+        })
     }
 
 
