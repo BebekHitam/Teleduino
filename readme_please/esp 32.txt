@@ -1,0 +1,22 @@
+//ESP32 melalui Bluetooth, selama ESP32 dikonfigurasi untuk menggunakan Bluetooth Classic 
+//dan mengirimkan data dalam format yang kompatibel (misalnya, sebagai string atau byte array).
+
+#include "BluetoothSerial.h"
+
+BluetoothSerial SerialBT;
+
+void setup() {
+  Serial.begin(115200);
+  SerialBT.begin("ESP32test"); // Nama perangkat Bluetooth
+  Serial.println("The device started, now you can pair it with Bluetooth!");
+}
+
+void loop() {
+  if (Serial.available()) {
+    SerialBT.write(Serial.read());
+  }
+  if (SerialBT.available()) {
+    Serial.write(SerialBT.read());
+  }
+  delay(20);
+}

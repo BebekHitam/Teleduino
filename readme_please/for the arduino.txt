@@ -1,0 +1,15 @@
+#include <SoftwareSerial.h>
+
+SoftwareSerial mySerial(10, 11); // RX, TX
+
+void setup() {
+  Serial.begin(9600); // Serial untuk komunikasi dengan komputer
+  mySerial.begin(9600); // Serial untuk komunikasi dengan modul Bluetooth
+}
+
+void loop() {
+  // Contoh data yang dikirimkan
+  String dataToSend = "Hello, Android!";
+  mySerial.println(dataToSend);
+  delay(1000); // Kirim setiap 1 detik
+}
