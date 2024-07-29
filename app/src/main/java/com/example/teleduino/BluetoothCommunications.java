@@ -14,11 +14,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.BluetoothDataIn.SensorValue;
+import com.example.BluetoothDataIn.DhtEleven;
 import com.example.bridge.ArduinoAdapterBluetooth;
 import com.example.radar.bluetoothScan;
 import com.example.telemetri.BluetoothService;
@@ -26,7 +25,7 @@ import com.example.telemetri.BluetoothService;
 import java.util.List;
 
 
-public class bluetoothCommunications extends Fragment {
+public class BluetoothCommunications extends Fragment {
     private Toolbar toolbar;
     private static final String TAG = "frame bluetooth";
     private static String DEVICE_ADDRESS = "0:0";
@@ -36,7 +35,8 @@ public class bluetoothCommunications extends Fragment {
     private BluetoothService bluetoothService;
     private Button oke, scanNearbyDevice;
     private ArduinoAdapterBluetooth arduinoAdapter;
-    private List<String> dataIn;
+    private TextView dataIn;
+    private List<DhtEleven> data;
     private RecyclerView recyclerView;
 
 
@@ -44,8 +44,16 @@ public class bluetoothCommunications extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        Bundle bundle = getArguments();
+        if (bundle != null){
+            String message = bundle.getString("device_address");
+            addressBluetooth.setText(message);
+
+        }
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_bluetooth_communications, container, false);
+
 
     }
 
@@ -56,7 +64,9 @@ public class bluetoothCommunications extends Fragment {
         addressBluetooth = view.findViewById(R.id.for_address);
         addressBluetooth.setHint(DEVICE_ADDRESS);
         dataIn = view.findViewById(R.id.datanya);
-        arduinoAdapter = new ArduinoAdapterBluetooth(dataIn);
+        recyclerView = view.findViewById(R.id.data_stream_in);
+
+        arduinoAdapter = new ArduinoAdapterBluetooth(data);
         recyclerView.setAdapter(arduinoAdapter);
 
         //Disini tolong lakukan scan
@@ -70,6 +80,8 @@ public class bluetoothCommunications extends Fragment {
             }
         });
         //taruh disini DEVICE_ADDRESSNYA, setelah scan untuk mengubah value "0:0"
+
+
 
 
         oke = view.findViewById(R.id.to_launch);
@@ -102,7 +114,12 @@ public class bluetoothCommunications extends Fragment {
                         getActivity().runOnUiThread(new Runnable(){
                             @Override
                             public void run(){
-                                arduinoAdapter.addData(receivedDataFromArduino);
+                                String[] data = receivedDataFromArduino.split(",");
+                                if (data.length == 2) {
+                                    String suhu = data[0].trim();
+                                    String kelembaban = data[1].trim();
+                                    arduinoAdapter.addData(suhu, kelembaban);
+                                }
 
                             }
                         });

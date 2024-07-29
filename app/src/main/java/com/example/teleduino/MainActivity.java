@@ -1,22 +1,21 @@
 package com.example.teleduino;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.MenuItem;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.navigation.NavigationBarView;
 
 public class MainActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
     private BottomNavigationView bnv;
     String title = "";
+    private static final int REQUEST_BLUETOOTH_SCAN = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
             int itemId = item.getItemId();
 
             if (itemId == R.id.bluetooth_navigation){
-                selectedFragment = new bluetoothCommunications();
+                selectedFragment = new BluetoothCommunications();
                 getSupportActionBar().setTitle("Komunikasi Bluetooth");
                     // Handle potential default case (optional)
             }
@@ -60,9 +59,22 @@ public class MainActivity extends AppCompatActivity {
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.main_frame, new bluetoothCommunications())
+                    .replace(R.id.main_frame, new BluetoothCommunications())
                     .commit();
             getSupportActionBar().setTitle("Komunikasi Bluetooth");
+        }
+
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra("device_address")){
+            String message = intent.getStringExtra("device_address");
+
+            Bundle bundle = new Bundle();
+            bundle.putString("device_address", message);
+
+            BluetoothCommunications fragmentBluetooth = new BluetoothCommunications();
+            fragmentBluetooth.setArguments(bundle);
+
+            getSupportFragmentManager().beginTransaction().replace(R.id.main_frame, new BluetoothCommunications()).commit();
         }
     }
 

@@ -25,6 +25,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import com.example.teleduino.BluetoothCommunications;
+import com.example.teleduino.MainActivity;
 import com.example.teleduino.R;
 import com.example.telemetri.BluetoothService;
 
@@ -41,9 +43,13 @@ public class bluetoothScan extends AppCompatActivity implements BluetoothService
     private ArrayAdapter<String> deviceListAdapter;
     private ArrayList<BluetoothDevice> deviceList = new ArrayList<>();
 
+    private boolean receiverRegistered = false;
+
 
     private TextView BluetoothAddress;
     public String theAddress;
+
+    private Button Oke;
 
 
 
@@ -72,11 +78,24 @@ public class bluetoothScan extends AppCompatActivity implements BluetoothService
         Button scanButton = findViewById(R.id.scanButton);
         ListView deviceListView = findViewById(R.id.deviceListView);
         BluetoothAddress = findViewById(R.id.selected_device_data);
+        Oke = findViewById(R.id.ok_button);
 
         deviceListAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1);
         deviceListView.setAdapter(deviceListAdapter);
 
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        Oke.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String deviceAddress = getTheAddress();
+                Intent intent = new Intent(bluetoothScan.this, MainActivity.class);
+                intent.putExtra("device_address", deviceAddress);
+                //setResult(RESULT_OK, intent);
+                startActivity(intent);
+                finish();
+            }
+        });
 
 
         if (bluetoothAdapter == null) {
@@ -111,26 +130,21 @@ public class bluetoothScan extends AppCompatActivity implements BluetoothService
     @Override
     protected void onResume() {
         super.onResume();
-        IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-        registerReceiver(receiver, filter);
+        if (!receiverRegistered) {
+            IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
+            registerReceiver(receiver, filter);
+            receiverRegistered = true;
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        unregisterReceiver(receiver);
+        if (receiverRegistered) {
+            unregisterReceiver(receiver);
+            receiverRegistered = false;
+        }
     }
-
-//    private void startScanning(){
-//
-//        getPackageManager();
-//        if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED)
-//        {
-//            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_LOCATION_PERMISSION);
-//        } else {
-//            bluetoothAdapter.startDiscovery();
-//        }
-//    }
 
     private void startScanning() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -159,16 +173,14 @@ public class bluetoothScan extends AppCompatActivity implements BluetoothService
         if (bluetoothService != null) {
             bluetoothService.close();
         }
-//        theAddress ="";
-//        //bluetoothService = new BluetoothService(device.getAddress(), this);
-//        theAddress = String.valueOf(new BluetoothService(device.getAddress(), this));
-//        BluetoothAdress.setText(theAddress);
         theAddress = device.getAddress();
-        //bluetoothService = new BluetoothService(theAddress, (View.OnClickListener) this);
         BluetoothAddress.setText(theAddress);
-
-
     }
+
+    public String getTheAddress() {
+        return theAddress;
+    }
+
     private void sendAddressToFragment(String address) {
         Bundle bundle = new Bundle();
         bundle.putString("BLUETOOTH_ADDRESS", address);
