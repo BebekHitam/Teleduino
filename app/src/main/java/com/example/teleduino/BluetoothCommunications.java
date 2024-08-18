@@ -9,6 +9,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,12 +46,7 @@ public class BluetoothCommunications extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        Bundle bundle = getArguments();
-        if (bundle != null){
-            String message = bundle.getString("device_address");
-            addressBluetooth.setText(message);
 
-        }
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_bluetooth_communications, container, false);
 
@@ -69,6 +65,8 @@ public class BluetoothCommunications extends Fragment {
         arduinoAdapter = new ArduinoAdapterBluetooth(data);
         recyclerView.setAdapter(arduinoAdapter);
 
+
+
         //Disini tolong lakukan scan
         scanNearbyDevice = view.findViewById(R.id.scan_the_bluetooth);
         scanNearbyDevice.setOnClickListener(new View.OnClickListener() {
@@ -79,54 +77,67 @@ public class BluetoothCommunications extends Fragment {
                 startActivity(intent);
             }
         });
-        //taruh disini DEVICE_ADDRESSNYA, setelah scan untuk mengubah value "0:0"
 
+
+        //taruh disini DEVICE_ADDRESSNYA, setelah scan untuk mengubah value "0:0"
+        Bundle bundle = getArguments();
+        if (bundle != null){
+            String message = bundle.getString("device_address");
+            addressBluetooth.setText(message);
+
+        }
 
 
 
         oke = view.findViewById(R.id.to_launch);
-
-
+//        if (addressBluetooth == null){
+//            oke.setClickable(false);
+//        }else {
+//            oke.setClickable(true);
+//        }
         oke.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int addressCheck = DEVICE_ADDRESS.length();
-                if (addressCheck >= 4){
-                    DEVICE_ADDRESS = String.valueOf(addressBluetooth.getText()); // ini tunggu set on click dulu
-                    bluetoothService = new BluetoothService(DEVICE_ADDRESS, this);
+                String address = addressBluetooth.getText().toString();
+                if (address.length() >= 4) {
+                    bluetoothService = new BluetoothService(address);
                     runTheConnection();
                 } else {
-                    Toast.makeText(getContext(), "masukkan address yang benar", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Please enter a valid address", Toast.LENGTH_SHORT).show();
                 }
-
-
-
             }
         });
     }
-    public void runTheConnection(){
+
+
+    public void runTheConnection() {
         Thread readBluetoothData = new Thread(new Runnable() {
             @Override
             public void run() {
-                while (true){
-                    final String receivedDataFromArduino = bluetoothService.readData();
-                    if (receivedDataFromArduino != null){
-                        getActivity().runOnUiThread(new Runnable(){
-                            @Override
-                            public void run(){
-                                String[] data = receivedDataFromArduino.split(",");
-                                if (data.length == 2) {
-                                    String suhu = data[0].trim();
-                                    String kelembaban = data[1].trim();
-                                    arduinoAdapter.addData(suhu, kelembaban);
+                while (!Thread.currentThread().isInterrupted()) {
+                    try {
+                        final String receivedDataFromArduino = bluetoothService.readData();
+                        if (receivedDataFromArduino != null) {
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    String[] data = receivedDataFromArduino.split(",");
+                                    if (data.length == 2) {
+                                        String suhu = data[0].trim();
+                                        String kelembaban = data[1].trim();
+                                        arduinoAdapter.addData(suhu, kelembaban);
+                                    }
                                 }
-
-                            }
-                        });
+                            });
+                        }
+                    } catch (Exception e) {
+                        Log.e("BluetoothConnection", "Error reading data", e);
+                        break; // Keluar dari loop jika terjadi kesalahan
                     }
                 }
             }
         });
+
         readBluetoothData.start();
     }
 

@@ -4,7 +4,6 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.util.Log;
-import android.view.View;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,21 +19,24 @@ public class BluetoothService {
     private InputStream inputStream;
     private DataReceivedListener dataReceivedListener;
 
+
     public interface DataReceivedListener{
         void onDataReceived(String data);
     }
 
-    public BluetoothService(String deviceAddress, View.OnClickListener bluetoothScan){
+    public BluetoothService(String deviceAddress){
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         BluetoothDevice bluetoothDevice = bluetoothAdapter.getRemoteDevice(deviceAddress);
         //dataReceivedListener = listener;
 
-        try{
+        try {
             bluetoothSocket = bluetoothDevice.createRfcommSocketToServiceRecord(MY_UUID);
             bluetoothSocket.connect();
             inputStream = bluetoothSocket.getInputStream();
-        } catch (IOException e){
-            Log.e(TAG, "Tidak bisa berkomunikasi antar bluetooth", e);
+            Log.d(TAG, "Connected to " + deviceAddress);
+        } catch (IOException e) {
+            Log.e(TAG, "Could not connect to device", e);
+            close(); // Make sure to close socket if connection fails
         }
 
     }

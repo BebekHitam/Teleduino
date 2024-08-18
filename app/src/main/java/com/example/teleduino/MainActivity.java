@@ -58,23 +58,21 @@ public class MainActivity extends AppCompatActivity {
         });
 
         if (savedInstanceState == null) {
+            BluetoothCommunications fragmentBluetooth = new BluetoothCommunications();
+
+            Intent intent = getIntent();
+            if (intent != null && intent.hasExtra("device_address")){
+                String message = intent.getStringExtra("device_address");
+
+                Bundle bundle = new Bundle();
+                bundle.putString("device_address", message);
+                fragmentBluetooth.setArguments(bundle);
+            }
+
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.main_frame, new BluetoothCommunications())
+                    .replace(R.id.main_frame, fragmentBluetooth)
                     .commit();
             getSupportActionBar().setTitle("Komunikasi Bluetooth");
-        }
-
-        Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("device_address")){
-            String message = intent.getStringExtra("device_address");
-
-            Bundle bundle = new Bundle();
-            bundle.putString("device_address", message);
-
-            BluetoothCommunications fragmentBluetooth = new BluetoothCommunications();
-            fragmentBluetooth.setArguments(bundle);
-
-            getSupportFragmentManager().beginTransaction().replace(R.id.main_frame, new BluetoothCommunications()).commit();
         }
     }
 
